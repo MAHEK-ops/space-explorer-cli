@@ -34,6 +34,22 @@ program
    console.log("Image:", data.url)
 
  })
+
+ import { NewsService } from "./services/newsService"
+
+const newsService = new NewsService()
+
+program
+ .command("news")
+ .description("Latest space news")
+ .action(async () => {
+
+   const news = await newsService.getNews()
+
+   console.log(news.results[0].title)
+   console.log(news.results[0].url)
+
+ })
 program
     .name("space")
     .description("Space Explorer CLI")
