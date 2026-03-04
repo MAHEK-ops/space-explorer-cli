@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
 import { Command } from "commander"
+import chalk from "chalk"
+
 import { NasaService } from "./services/nasaService"
 import { ISSService } from "./services/issService"
 import { NewsService } from "./services/newsService"
+import { validateNumber } from "./utils/validator"
 
 const program = new Command()
 
@@ -12,130 +15,169 @@ const issService = new ISSService()
 const newsService = new NewsService()
 
 program
-    .name("space")
-    .description("Space Explorer CLI")
-    .version("1.0.0")
+.name("space")
+.description(" Space Explorer CLI - Explore space data from your terminal")
+.version("1.0.0")
 
 // APOD
-program.command("apod")
-.description("Astronomy Picture of the Day")
-.action(async () => {
+
+program
+.command("apod")
+.description("Get NASA Astronomy Picture of the Day")
+.option("-d, --date <date>", "Get APOD for a specific date")
+.action(async (options) => {
 
     const data = await nasaService.getAPOD()
 
-    console.log("Title:", data.title)
-    console.log("Explanation:", data.explanation)
-    console.log("Image:", data.url)
+    console.log(chalk.yellow("\n Astronomy Picture of the Day\n"))
+
+    console.log(chalk.green("Title:"), data.title)
+    console.log(chalk.blue("Explanation:"), data.explanation)
+    console.log(chalk.magenta("Image URL:"), data.url)
 
 })
 
-// showing asteroid data instead
-program.command("asteroids-today")
-.description("Space objects near Earth")
-.action(async () => {
+
+// Asteroids Today
+
+program
+.command("asteroids")
+.description("List near-earth asteroids for today")
+.option("-l, --limit <number>", "Number of asteroids to show", "3")
+.action(async (options) => {
+
+    const limit = validateNumber(options.limit, "Limit")
 
     const data = await nasaService.getTodayAsteroids()
 
     const today = Object.keys(data.near_earth_objects)[0]
 
-    console.log("Near Earth Asteroids:")
+    const asteroids = data.near_earth_objects[today].slice(0, limit)
 
-    data.near_earth_objects[today].slice(0,3).forEach((a:any)=>{
-        console.log(a.name)
+    console.log(chalk.yellow("\n Near Earth Asteroids\n"))
+
+    asteroids.forEach((a:any) => {
+        console.log(chalk.green(a.name))
     })
 
 })
 
-// Asteroids
-program.command("asteroids")
-.description("Near Earth Asteroids")
-.action(async () => {
 
-    const data = await nasaService.getAsteroids()
+// ISS Location
 
-    const today = Object.keys(data.near_earth_objects)[0]
-
-    console.log("Asteroid Name:",
-        data.near_earth_objects[today][0].name)
-
-})
-
-// ISS location
-program.command("iss")
-.description("Current ISS Location")
+program
+.command("iss")
+.description("Get current location of the International Space Station")
 .action(async () => {
 
     const data = await issService.getISSLocation()
 
-    console.log("Latitude:", data.iss_position.latitude)
-    console.log("Longitude:", data.iss_position.longitude)
+    console.log(chalk.yellow("\n ISS Current Location\n"))
+
+    console.log(chalk.green("Latitude:"), data.iss_position.latitude)
+    console.log(chalk.green("Longitude:"), data.iss_position.longitude)
 
 })
 
+
 // Astronauts
-program.command("astronauts")
-.description("Astronauts currently in space")
+
+program
+.command("astronauts")
+.description("List astronauts currently in space")
 .action(async () => {
 
     const data = await issService.getAstronauts()
 
-    console.log("People in Space:", data.number)
+    console.log(chalk.yellow("\n People Currently in Space\n"))
 
-    data.people.forEach((person:any)=>{
-        console.log(person.name)
+    console.log(chalk.green("Total:"), data.number)
+
+    data.people.forEach((person:any) => {
+        console.log(chalk.blue(person.name))
     })
 
 })
 
-// Space news
-program.command("news")
-.description("Latest space news")
+
+// Space News
+
+program
+.command("news")
+.description("Get latest space news")
 .action(async () => {
 
     const news = await newsService.getNews()
 
-    console.log(news.results[0].title)
-    console.log(news.results[0].url)
+    console.log(chalk.yellow("\n Latest Space News\n"))
+
+    console.log(chalk.green(news.results[0].title))
+    console.log(chalk.blue(news.results[0].url))
 
 })
 
-// Random planet
-program.command("planet")
-.description("Random planet fact")
+
+// Random Planet
+
+program
+.command("planet")
+.description("Get a random planet name")
 .action(() => {
 
-    const planets = ["Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus","Neptune"]
+    const planets = [
+        "Mercury",
+        "Venus",
+        "Earth",
+        "Mars",
+        "Jupiter",
+        "Saturn",
+        "Uranus",
+        "Neptune"
+    ]
 
-    const random = planets[Math.floor(Math.random()*planets.length)]
+    const random = planets[Math.floor(Math.random() * planets.length)]
 
-    console.log("Random Planet:", random)
+    console.log(chalk.yellow("\n Random Planet"))
+    console.log(chalk.green(random))
 
 })
+
 
 // Galaxy
-program.command("galaxy")
-.description("About Milky Way")
+
+program
+.command("galaxy")
+.description("Learn about our galaxy")
 .action(() => {
 
-    console.log("Our galaxy is the Milky Way")
+    console.log(chalk.yellow("\n Galaxy Info"))
+    console.log(chalk.green("Our galaxy is the Milky Way."))
 
 })
 
-// Rocket launches
-program.command("launches")
-.description("Upcoming rocket launches")
+
+// Launches
+
+program
+.command("launches")
+.description("Information about upcoming rocket launches")
 .action(() => {
 
-    console.log("Check NASA website for upcoming launches")
+    console.log(chalk.yellow("\n Rocket Launches"))
+    console.log(chalk.green("Visit NASA website for upcoming launches."))
 
 })
+
 
 // Info
-program.command("info")
-.description("About Space CLI")
+
+program
+.command("info")
+.description("About Space Explorer CLI")
 .action(() => {
 
-    console.log("Space Explorer CLI helps explore space data from terminal")
+    console.log(chalk.yellow("\n Space Explorer CLI"))
+    console.log(chalk.green("A CLI tool to explore space data using public APIs."))
 
 })
 
