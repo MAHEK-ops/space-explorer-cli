@@ -7,6 +7,21 @@ const program = new Command()
 console.log(figlet.textSync("SPACE CLI"))
 const nasaService = new NasaService()
 
+import { ISSService } from "./services/issService"
+
+const issService = new ISSService()
+
+program
+ .command("iss")
+ .description("Current location of ISS")
+ .action(async () => {
+
+   const data = await issService.getISSLocation()
+
+   console.log("Latitude:", data.iss_position.latitude)
+   console.log("Longitude:", data.iss_position.longitude)
+
+ })
 program
  .command("apod")
  .description("Astronomy Picture of the Day")
